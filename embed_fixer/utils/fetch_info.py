@@ -105,6 +105,9 @@ class PostInfoFetcher:
                 data["image_proxy_urls"] = [
                     page.get("urls", {}).get("original", "") for page in pages_data
                 ]
+                data["image_fallback_urls"] = [
+                    page.get("urls", {}).get("regular", "") for page in pages_data
+                ]
                 logger.debug(f"Extracted image proxy URLs: {data['image_proxy_urls']}")
 
         return PixivArtwork(**data)
@@ -208,6 +211,8 @@ class UgoiraMeta(BaseModel):
 class PixivArtwork(BaseModel):
     id: int = Field(alias="illustId")
     image_urls: list[str] = Field(alias="image_proxy_urls", default_factory=list)
+    # Lower-resolution (1200px "regular") variants, used when the original exceeds the upload limit
+    fallback_image_urls: list[str] = Field(alias="image_fallback_urls", default_factory=list)
     title: str
     description: str
     tags: list[str]

@@ -532,6 +532,7 @@ class FixerCog(commands.Cog):
         headers = None
         proxy = None
         ugoira_meta: UgoiraMeta | None = None
+        fallback_urls: dict[str, str] = {}
 
         try:
             if domain_id is DomainId.PIXIV:
@@ -541,6 +542,13 @@ class FixerCog(commands.Cog):
 
                 content = info.description
                 media_urls = info.image_urls
+                fallback_urls = {
+                    original: fallback
+                    for original, fallback in zip(
+                        info.image_urls, info.fallback_image_urls, strict=False
+                    )
+                    if fallback
+                }
                 headers = settings.pixiv_headers
                 proxy = settings.proxy_url
                 if info.is_ugoira:
@@ -569,6 +577,7 @@ class FixerCog(commands.Cog):
             headers=headers,
             proxy=proxy,
             ugoira_meta=ugoira_meta,
+            fallback_urls=fallback_urls,
         )
         await downloader.start(spoiler=spoiler, filesize_limit=filesize_limit)
 

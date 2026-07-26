@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 
 class MediaDownloader:
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         session: aiohttp.ClientSession,
         *,
@@ -27,6 +27,7 @@ class MediaDownloader:
         headers: dict[str, str] | None = None,
         proxy: str | None = None,
         ugoira_meta: UgoiraMeta | None = None,
+        fallback_urls: dict[str, str] | None = None,
     ) -> None:
         self.media_urls = media_urls
         self.session = session
@@ -35,6 +36,7 @@ class MediaDownloader:
         self.proxy = proxy
         self.ugoira_meta = ugoira_meta
         self.ugoira_file: discord.File | None = None
+        self.fallback_urls = fallback_urls or {}
 
     async def _fetch_bytes(self, url: str) -> bytes | None:
         timeout = aiohttp.ClientTimeout(total=30)
@@ -123,6 +125,26 @@ class MediaDownloader:
         logger.warning("Failed to produce an ugoira MP4 within the filesize limit")
 
     async def _download(self, url: str, *, spoiler: bool, filesize_limit: int) -> None:
+        """Download a media file, falling back to a lower-resolution variant if one exists.
+
+        Tries the original URL first; if it is unavailable or exceeds the upload limit,
+        retries with the fallback URL. The resulting file is keyed by the original URL.
+        """
+        candidates = [url]
+        if fallback := self.fallback_urls.get(url):
+            candidates.append(fallback)
+
+        for candidate in candidates:
+            file_ = await self._fetch_file(
+                candidate, spoiler=spoiler, filesize_limit=filesize_limit
+            )
+            if file_ is not None:
+                self.files[url] = file_
+                return
+
+    async def _fetch_file(
+        self, url: str, *, spoiler: bool, filesize_limit: int
+    ) -> discord.File | None:
         timeout = aiohttp.ClientTimeout(total=10)
 
         try:
@@ -130,28 +152,28 @@ class MediaDownloader:
                 url, timeout=timeout, headers=self.headers, proxy=self.proxy
             ) as resp:
                 if resp.status != 200:
-                    return
+                    return None
 
                 content_length = resp.headers.get("Content-Length")
                 if content_length is not None and int(content_length) > filesize_limit:
-                    return
+                    return None
 
                 data = await resp.read()
 
                 media_type = resp.headers.get("Content-Type")
         except TimeoutError:
             logger.warning(f"Timeout downloading media {url}")
-            return
+            return None
         except Exception:
             logger.exception(f"Failed to download media {url}")
-            return
+            return None
 
         if media_type:
             filename = f"{url.rsplit('/', maxsplit=1)[-1].split('.', maxsplit=1)[0]}.{media_type.split('/')[-1]}"
         else:
             filename = url.rsplit("/", maxsplit=1)[-1]
 
-        self.files[url] = discord.File(io.BytesIO(data), filename=filename, spoiler=spoiler)
+        return discord.File(io.BytesIO(data), filename=filename, spoiler=spoiler)
 
     async def start(self, *, spoiler: bool, filesize_limit: int) -> None:
         async with asyncio.TaskGroup() as tg:
