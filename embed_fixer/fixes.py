@@ -439,6 +439,7 @@ DOMAINS: Final[list[Domain]] = [
         websites=[
             Website(r"https://(www.)?threads.(net|com)/@[\w.]+/?"),
             Website(r"https://(www.)?threads.(net|com)/@[\w.]+/post/[\w]+/?"),
+            Website(r"https://(www.)?threads.(net|com)/share/[\w]+/?"),
         ],
         fix_methods=[
             FixMethod(
