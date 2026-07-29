@@ -63,7 +63,7 @@ Fixings are currently available for:
 - **Bilibili**: [fxbilibili](https://github.com/seriaati/fxbilibili)/[EmbedEZ](https://embedez.com)/[BiliFix](https://vxbilibili.com)
 - **Bilibili Opus**: [BiliFix](https://vxbilibili.com)
 - **Tumblr**: [fxtumblr](https://github.com/knuxify/fxtumblr)
-- **Threads**: [FixThreads](https://github.com/milanmdev/fixthreads)/[vxThreads](https://github.com/everettsouthwick/vxThreads)/[EmbedEZ](https://embedez.com)/[FixEmbed](https://fixembed.app)
+- **Threads**: [FixThreads](https://github.com/milanmdev/fixthreads)/[vxThreads](https://github.com/everettsouthwick/vxThreads)/[FixEmbed](https://fixembed.app)
 - **PTT**: [fxptt](https://github.com/seriaati/fxptt)
 - **DeviantArt**: [fxdeviantart](https://github.com/Tschrock/fixdeviantart)
 - **Pinterest**: [EmbedEZ](https://embedez.com)
