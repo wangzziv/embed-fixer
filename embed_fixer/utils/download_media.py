@@ -152,6 +152,7 @@ class MediaDownloader:
                 url, timeout=timeout, headers=self.headers, proxy=self.proxy
             ) as resp:
                 if resp.status != 200:
+                    logger.warning(f"Failed to fetch {url}, status: {resp.status}")
                     return None
 
                 content_length = resp.headers.get("Content-Length")
